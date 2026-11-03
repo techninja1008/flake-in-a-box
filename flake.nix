@@ -54,7 +54,9 @@
             name = "fiab-serve-${bundle.name}";
             runtimeInputs = [ ];
             text = ''
-              exec ${lib.getExe self.packages.${pkgs.stdenv.hostPlatform.system}.fiab} serve --bundle ${bundle} "$@"
+              exec ${
+                lib.getExe self.packages.${pkgs.stdenv.hostPlatform.system}.fiab
+              } serve --bundle ${bundle} "$@"
             '';
             meta.description = "Serve the ${bundle.name} flake-in-a-box bundle";
           };

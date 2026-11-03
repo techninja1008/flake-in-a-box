@@ -22,7 +22,12 @@ let
   '';
 in
 {
-  inherit src txt fod ia;
+  inherit
+    src
+    txt
+    fod
+    ia
+    ;
   stock = pkgs.mkBinaryCache {
     rootPaths = [ ia ];
     compression = "none";

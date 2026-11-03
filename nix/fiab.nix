@@ -9,7 +9,10 @@ buildGoModule {
   };
   vendorHash = null;
   env.CGO_ENABLED = 0;
-  ldflags = [ "-s" "-w" ];
+  ldflags = [
+    "-s"
+    "-w"
+  ];
   meta = {
     description = "flake-in-a-box: CA closure rewriter, cache packer and bundle server";
     mainProgram = "fiab";

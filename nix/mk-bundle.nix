@@ -23,7 +23,9 @@
   # a builder for it.
   systems ? builtins.attrNames (flake.packages or { }),
   # Which packages to bundle: a predicate `system: name: package: bool`.
-  includePackage ? _system: _name: _pkg: true,
+  includePackage ?
+    _system: _name: _pkg:
+    true,
   # Dist flavours; the first one is also served as /flake.tar.gz.
   #   ca-rewrite  closures rewritten to content-addressed paths and fetched
   #               with builtins.fetchClosure; consumers need no trusted key.
@@ -64,16 +66,20 @@ let
 
   checked =
     assert lib.assertMsg (modes != [ ]) "flake-in-a-box: modes must not be empty";
-    assert lib.assertMsg (lib.all (m: lib.elem m knownModes) modes)
-      "flake-in-a-box: unknown mode in ${toString modes}; known: ${toString knownModes}";
+    assert lib.assertMsg (lib.all (
+      m: lib.elem m knownModes
+    ) modes) "flake-in-a-box: unknown mode in ${toString modes}; known: ${toString knownModes}";
     assert lib.assertMsg (lib.unique modes == modes) "flake-in-a-box: duplicate modes";
     assert lib.assertMsg (
       !(lib.elem "ca-rewrite" modes) || caVariants != [ ]
     ) "flake-in-a-box: ca-rewrite needs at least one caVariant";
-    assert lib.assertMsg (lib.all (v: lib.elem v [
-      "positions"
-      "legacy"
-    ]) caVariants) "flake-in-a-box: caVariants must be positions and/or legacy";
+    assert lib.assertMsg (lib.all (
+      v:
+      lib.elem v [
+        "positions"
+        "legacy"
+      ]
+    ) caVariants) "flake-in-a-box: caVariants must be positions and/or legacy";
     assert lib.assertMsg (lib.elem compression [
       "none"
       "zstd"
@@ -87,7 +93,10 @@ let
   # Package selection and metadata (pure evaluation).
 
   selected = genAttrs systems (
-    system: filterAttrs (n: p: lib.isDerivation p && includePackage system n p) (flake.packages.${system} or { })
+    system:
+    filterAttrs (n: p: lib.isDerivation p && includePackage system n p) (
+      flake.packages.${system} or { }
+    )
   );
 
   # JSON-safe copy of a value: drops functions, derivations, paths and
@@ -226,7 +235,9 @@ let
   needIA = has "ia-signed" || has "filtered";
 
   caches =
-    (lib.optionalAttrs (has "ca-rewrite") (lib.mapAttrs' (v: c: lib.nameValuePair "ca-${v}" c) caCaches))
+    (lib.optionalAttrs (has "ca-rewrite") (
+      lib.mapAttrs' (v: c: lib.nameValuePair "ca-${v}" c) caCaches
+    ))
     // lib.optionalAttrs needIA { ia = iaCache; };
 
   # ---------------------------------------------------------------------
@@ -266,7 +277,8 @@ let
   # filtered mode -------------------------------------------------------
 
   # lib.fileset needs a path value; flake sources are store path strings.
-  srcPath = if builtins.isPath src then src else /. + builtins.unsafeDiscardStringContext (toString src);
+  srcPath =
+    if builtins.isPath src then src else /. + builtins.unsafeDiscardStringContext (toString src);
 
   mandatoryFiles = lib.fileset.unions (
     [ (srcPath + "/flake.nix") ]
@@ -282,9 +294,7 @@ let
   };
 
   drvPaths = unique (
-    concatMap (
-      system: map (p: p.drvPath) (builtins.attrValues selected.${system})
-    ) systems
+    concatMap (system: map (p: p.drvPath) (builtins.attrValues selected.${system})) systems
   );
 
   # Output names re-exported by the wrapper.
@@ -391,19 +401,17 @@ let
   # ---------------------------------------------------------------------
   # Manifest and bundle.
 
-  modeEntry =
-    m:
-    {
-      name = m;
-      kind = if m == "filtered" then "passthrough" else "lib";
-      lastModified = 1;
-      signed = m != "ca-rewrite";
-      # Flake nixConfig cannot enable experimental features for evaluation
-      # (builtins.fetchClosure is missing either way), so none are set.
-      experimentalFeatures = [ ];
-      needsFetchClosure = m != "filtered";
-      outputs = if m == "filtered" then flakeOutputNames else [ ];
-    };
+  modeEntry = m: {
+    name = m;
+    kind = if m == "filtered" then "passthrough" else "lib";
+    lastModified = 1;
+    signed = m != "ca-rewrite";
+    # Flake nixConfig cannot enable experimental features for evaluation
+    # (builtins.fetchClosure is missing either way), so none are set.
+    experimentalFeatures = [ ];
+    needsFetchClosure = m != "filtered";
+    outputs = if m == "filtered" then flakeOutputNames else [ ];
+  };
 
   manifest = pkgs.writeText "${name}-manifest.json" (
     builtins.toJSON {
@@ -433,7 +441,9 @@ let
       }
       ''
         mkdir -p "$out/dist" "$out/cache"
-        ${concatMapStringsSep "\n" (c: ''ln -s ${caches.${c}} "$out/cache/${c}"'') (builtins.attrNames caches)}
+        ${concatMapStringsSep "\n" (c: ''ln -s ${caches.${c}} "$out/cache/${c}"'') (
+          builtins.attrNames caches
+        )}
         python3 - "$out" ${manifest} ${
           concatMapStringsSep " " (m: "${m}=${dists.${m}}") modes
         } ${lib.optionalString (has "filtered") "lock=${src}"} <<'EOF'

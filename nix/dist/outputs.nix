@@ -111,15 +111,12 @@ in
   packages = packagesFor defaultVariant;
 
   # Explicit variant selection, e.g. legacyPackages.x86_64-linux.variants.legacy.hello
-  legacyPackages = mapAttrs (
-    system: _:
-    {
-      variants = listToAttrs (
-        map (v: {
-          name = v;
-          value = (packagesFor v).${system};
-        }) variants
-      );
-    }
-  ) data.packages;
+  legacyPackages = mapAttrs (system: _: {
+    variants = listToAttrs (
+      map (v: {
+        name = v;
+        value = (packagesFor v).${system};
+      }) variants
+    );
+  }) data.packages;
 }
