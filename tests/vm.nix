@@ -50,6 +50,10 @@ pkgs.testers.runNixOSTest {
           # The filtered dist evaluates nixpkgs from its lock file; there is no
           # network in the test, so the source is provided up front.
           additionalPaths = [ nixpkgsSrc ];
+          # Hashing that source (~50k files) over the shared virtiofs store
+          # exhausts virtiofsd's file descriptors; use a store image instead.
+          useNixStoreImage = true;
+          writableStore = true;
         };
         networking.extraHosts = ''
           ${nodes.server.networking.primaryIPAddress} cache-a.test cache-b.test
