@@ -1,0 +1,11 @@
+--- a/pkgs/build-support/binary-cache/make-binary-cache.py
++++ b/pkgs/build-support/binary-cache/make-binary-cache.py
+@@ -50,6 +50,8 @@
+         f.write(
+             f"References: {' '.join(dropPrefix(ref, nixPrefix) for ref in item['references'])}\n"
+         )
++        if item.get("ca"):
++            f.write(f"CA: {item['ca']}\n")
+ 
+ 
+ def main():
